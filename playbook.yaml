@@ -1,0 +1,33 @@
+---
+- hosts: all
+  become: true
+  vars:                                                               # Add
+    path_to_nginx_conf: "./nginx.conf"                                # These
+    nginx_message: "Hello from Ansible on {{ inventory_hostname }}"   # Lines
+  tasks:
+  - name: Install NGINX
+    apt:
+      name: nginx
+      state: latest
+      update_cache: true
+  - name: Start NGINX Service
+    service:
+      name: nginx
+      state: started
+  - name: Add nginx conf
+    template:                          # Replace copy for template
+      src: "{{ path_to_nginx_conf }}"  # Change this line to a variable
+      dest: /etc/nginx/nginx.conf
+    notify: Restart nginx
+
+  handlers:                            #  Add this line 
+  - name: "Restart nginx"              #  Move
+    service:                           #  the restart task to here
+      name: "nginx"                    #  to 
+      state: "restarted"               #  here
+
+
+# call using:
+# ansible-playbook -i inventory.yaml playbook.yaml -e path_to_nginx_conf=./nginx.conf -e nginx_message='hello-nginx'
+# or without setting the variables
+# ansible-playbook -i inventory.yaml playbook.yaml
